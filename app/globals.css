@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --radius: 20px;
+
+  /* Brand */
+  --cream: #fffce1;
+  --cream-soft: #fffdf0;
+  --sky: #cfebff;
+  --sky-soft: #e6f4ff;
+  --navy: #23324a;
+  --navy-2: #34455f;
+  --gray-light: #f5f7fa;
+
+  /* Semantic */
+  --income: #22c55e;
+  --income-soft: #e9faf0;
+  --expense: #ef4444;
+  --expense-soft: #fdecec;
+  --warning: #f59e0b;
+  --warning-soft: #fef3e2;
+
+  /* Surface system (light) */
+  --background: #fbfaf3;
+  --surface: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.6);
+  --surface-muted: var(--gray-light);
+  --foreground: var(--navy);
+  --muted-foreground: #64748b;
+  --border-soft: rgba(35, 50, 74, 0.08);
+
+  --accent: var(--sky);
+  --accent-foreground: var(--navy);
+  --primary: var(--navy);
+  --primary-foreground: #ffffff;
+
+  --shadow-soft: 0 8px 30px rgba(35, 50, 74, 0.06);
+  --shadow-lift: 0 16px 40px rgba(35, 50, 74, 0.12);
+}
+
+.dark {
+  --background: #131b28;
+  --surface: #1b2536;
+  --surface-glass: rgba(27, 37, 54, 0.55);
+  --surface-muted: #202b3d;
+  --foreground: #f3f6fb;
+  --muted-foreground: #94a3b8;
+  --border-soft: rgba(255, 255, 255, 0.08);
+
+  --cream: #3a3a2c;
+  --cream-soft: #2b2b22;
+  --sky: #1f3a52;
+  --sky-soft: #182c3e;
+
+  --accent: #1f3a52;
+  --accent-foreground: #cfebff;
+  --primary: #f3f6fb;
+  --primary-foreground: #16202f;
+
+  --income-soft: rgba(34, 197, 94, 0.12);
+  --expense-soft: rgba(239, 68, 68, 0.12);
+  --warning-soft: rgba(245, 158, 11, 0.14);
+
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.25);
+  --shadow-lift: 0 20px 45px rgba(0, 0, 0, 0.4);
+}
+
+@theme inline {
+  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border-soft);
+
+  --color-cream: var(--cream);
+  --color-cream-soft: var(--cream-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
+  --color-gray-light: var(--gray-light);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-income: var(--income);
+  --color-income-soft: var(--income-soft);
+  --color-expense: var(--expense);
+  --color-expense-soft: var(--expense-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 8px);
+}
+
+* {
+  border-color: var(--border-soft);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::selection {
+  background: var(--sky);
+  color: var(--navy);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-soft); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+
+.glass {
+  background: var(--surface-glass);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--border-soft);
+}
+
+.card-surface {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+.font-display { font-family: var(--font-display); }
+.font-tabular { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.dark :focus-visible { outline-color: var(--sky); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-4%, 6%) scale(1.05); }
+}
+.animate-float-slow { animation: float-slow 12s ease-in-out infinite; }
+
+@keyframes float-slower {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(5%, -5%) scale(1.08); }
+}
+.animate-float-slower { animation: float-slower 16s ease-in-out infinite; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-muted) 25%, var(--border-soft) 37%, var(--surface-muted) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
