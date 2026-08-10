@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import { mockProfile } from "@/lib/mock-data";
 
 const schema = z.object({
   username: z
@@ -25,12 +24,20 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 
-const TAKEN_USERNAMES = ["admin", "rakapratama", "test"];
+const TAKEN_USERNAMES = ["admin", "test"];
+
+interface AuthedUser {
+  fullName: string;
+  email: string;
+  avatarUrl?: string | null;
+}
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const [status, setStatus] = React.useState<"idle" | "checking" | "available" | "taken">("idle");
+  const [user, setUser] = React.useState<AuthedUser | null>(null);
+  const [loadingUser, setLoadingUser] = React.useState(true);
 
   const {
     register,
@@ -40,6 +47,26 @@ export default function OnboardingPage() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const username = watch("username");
+
+  // Load the actual logged-in user (from Google or email signup) instead
+  // of showing placeholder data.
+  React.useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (error || !data.user) {
+        toast.error("You're not signed in — redirecting to login.");
+        router.push("/login");
+        return;
+      }
+      const meta = data.user.user_metadata ?? {};
+      setUser({
+        fullName: meta.full_name ?? meta.name ?? data.user.email?.split("@")[0] ?? "there",
+        email: data.user.email ?? "",
+        avatarUrl: meta.avatar_url ?? meta.picture ?? null,
+      });
+      setLoadingUser(false);
+    });
+  }, [router]);
 
   React.useEffect(() => {
     if (!username || username.length < 3) {
@@ -61,14 +88,14 @@ export default function OnboardingPage() {
     setLoading(true);
     const supabase = createClient();
     const {
-      data: { user },
+      data: { user: authUser },
     } = await supabase.auth.getUser();
 
-    if (user) {
+    if (authUser) {
       const { error } = await supabase
         .from("profiles")
         .update({ username: values.username })
-        .eq("id", user.id);
+        .eq("id", authUser.id);
       if (error) {
         toast.error("Couldn't save username", { description: error.message });
         setLoading(false);
@@ -84,10 +111,14 @@ export default function OnboardingPage() {
   return (
     <AuthShell title="One last step" subtitle="Choose a unique username — this is your public identity on MoneyMate.">
       <div className="mb-6 flex items-center gap-3 rounded-xl bg-surface-muted p-3">
-        <Avatar name={mockProfile.full_name} size={44} />
+        {loadingUser ? (
+          <div className="h-11 w-11 animate-pulse rounded-full bg-border" />
+        ) : (
+          <Avatar name={user?.fullName ?? ""} src={user?.avatarUrl} size={44} />
+        )}
         <div>
-          <p className="text-sm font-medium">{mockProfile.full_name}</p>
-          <p className="text-xs text-muted-foreground">{mockProfile.email}</p>
+          <p className="text-sm font-medium">{loadingUser ? "Loading…" : user?.fullName}</p>
+          <p className="text-xs text-muted-foreground">{loadingUser ? "" : user?.email}</p>
         </div>
       </div>
 
@@ -95,7 +126,7 @@ export default function OnboardingPage() {
         <div className="space-y-1.5">
           <Label htmlFor="username">Username</Label>
           <div className="relative">
-            <Input id="username" placeholder="rakapratama" {...register("username")} />
+            <Input id="username" placeholder="yourname" {...register("username")} />
             {status === "available" && (
               <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-income" />
             )}
@@ -112,7 +143,7 @@ export default function OnboardingPage() {
           ) : null}
         </div>
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full" disabled={loading || loadingUser}>
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           Continue to dashboard
         </Button>
